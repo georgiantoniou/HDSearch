@@ -8,6 +8,23 @@
     unarchive: 
       src: ~/HDSearch.tgz 
       dest: ~/
+
+  - name: Set Up Docker
+    become: yes
+      tasks:
+      - name: Set Up Docker Curl
+        command: ~/HDSearch/scripts/set-up-docker.sh
+        async: 10000 
+        poll: 0
+  
+  - name: Change Storage Folder
+    become: yes
+      tasks:
+    - name: Make Space to Commit Image
+      command: ~/HDSearch/scripts/change-storage-location-docker.sh
+      async: 10000 
+      poll: 0
+
 - name: Execute HDSearch Container 
   become: yes
   hosts:
@@ -19,4 +36,4 @@
     - name: Change to docker group 
       command: sudo newgrp docker
     - name: Compose Up HDSearch 
-      command: docker compose up
+      command: cd ~/HDSearch/microsuite; sudo docker compose up
