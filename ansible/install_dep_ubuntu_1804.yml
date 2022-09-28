@@ -1,0 +1,26 @@
+---
+- name: Set Up Docker
+  become: yes
+    tasks:
+    - name: Set Up Docker Curl
+      command: ../scripts/set-up-docker.sh
+      async: 10000 
+      poll: 0
+  
+- name: Install libraries
+  become: yes
+  apt:
+    update_cache: yes
+    pkg:
+    - docker-compose
+    - gnupg2
+    - pass
+  when: ansible_distribution == 'Ubuntu' and ansible_distribution_version == '18.04' 
+
+- name: Change Storage Folder
+  become: yes
+    tasks:
+  - name: Make Space to Commit Image
+    command: ../scripts/change-storage-location-docker.sh
+    async: 10000 
+    poll: 0

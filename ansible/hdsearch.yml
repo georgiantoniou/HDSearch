@@ -1,0 +1,51 @@
+---
+- name: Kill bucket server
+  hosts: bucket
+  tags: 
+  - kill_bucket
+  tasks:
+  - name: Kill bucket server       
+    ignore_errors: yes
+    shell: docker exec {{ CONTAINER_ID }} sudo pkill -9 bucket_server
+
+- name: Run bucket server
+  hosts: bucket
+  tags: 
+  - run_bucket
+  tasks:
+  - name: Run bucket server
+    command: docker exec {{ CONTAINER_ID }} --workdir /MicroSuite/src/HDSearch/bucket_service/service taskset -c {{ CORES }} ./bucket_server {{ DATASET }} {{ IP }}:{{ PORT }} {{ MODE }} {{ THREADS }} {{ ID }} {{ NUM_BUCKETS }}
+    async: 10000 
+    poll: 0
+
+- name: Copy IP file
+  hosts: midtier
+  tags:
+  - copy_ip_file
+  tasks:
+  - name: Copy IP file    
+    ignore_errors: yes
+    shell: sudo docker cp {{ IP_FILE_PATH }} {{ CONTAINER_ID }}:/MicroSuite/src/HDSearch/mid_tier_service/service/bucket_servers_IP.txt
+
+
+- name: Kill midtier
+  hosts: midtier
+  tags:
+  - kill_midtier
+  tasks:
+  - name: Kill midtier    
+    ignore_errors: yes
+    shell: docker exec {{ CONTAINER_ID }} sudo pkill -9 mid_tier_server
+
+
+
+
+- name: Run midtier
+  hosts: midtier
+  tags: 
+  - run_midtier
+  tasks:
+  - name: Run midtier
+    command: docker exec {{ CONTAINER_ID }} --workdir /MicroSuite/src/HDSearch/mid_tier_service/service taskset -c {{ CORES }} ./mid_tier_server {{ HASH_TABLES }} {{ KEY_LENGTH }} {{ PROBE_LEVEL }} {{ BUCKET_SERVERS }} {{ IP_FILE_PATH }} {{ DATASET }} {{ MODE }} {{ IP }}:{{ PORT }} {{ NETWORK_THREADS }} {{ DISPATCH_THREADS }} {{ RESPONSE_THREADS }} {{ STATS }}
+    async: 10000 
+    poll: 0  
