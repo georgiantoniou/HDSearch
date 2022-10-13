@@ -4,13 +4,13 @@ export ANSIBLE_HOST_KEY_CHECKING=False
 
 get_HDSearch () {
 
-  if [[ ! -d "microsuite/" ]]
+  if [[ ! -d "microsuite/" ]]; then
   
     mkdir microsuite
    
   fi
 
-  if [[ ! -d "microsuite/HDSearch" ]]
+  if [[ ! -d "microsuite/HDSearch" ]]; then
   
     pushd microsuite 
     git clone https://github.com/ucy-xilab/MicroSuite.git
@@ -18,8 +18,8 @@ get_HDSearch () {
 
   fi
 
-  mv Dockerfile ./microsuite
-  mv docker-compose.yml ./microsuite
+  cp Dockerfile ./microsuite
+  cp docker-compose.yml ./microsuite
 
 }
 
@@ -42,6 +42,8 @@ build_install () {
   install_dep
   build
   ansible-playbook -v -i hosts ansible/install.yml
+  echo "irtaaaaaaaaaa"
+  #ssh node1 "cd ~/HDSearch/microsuite; sudo docker compose up"
 }
 
 "$@"
