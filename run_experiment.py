@@ -40,8 +40,7 @@ def run_ansible_playbook(inventory, extravars=None, playbook=None, tags=None):
 def start_remote():
     run_ansible_playbook(
         inventory='hosts', 
-        playbook='ansible/install.yml', 
-        tags='compose_up_hdsearch')
+        playbook='ansible/install.yml')
 
 def set_uncore_freq(conf, freq_mhz):
     freq_hex=format(freq_mhz//100, 'x')
@@ -80,37 +79,51 @@ def kill_profiler():
 
 def run_remote(midtier_conf, bucket_conf):
 
+    f = open("/users/ganton12/HDSearch/microsuite/bucket_servers_IP.txt", "w")
     #start bucket servers first and prepare IP file for midtier
-    f = open("/users/ganton12/microsuite/bucket_servers_IP.txt", "a")
-    result = exec_command("ssh node1 \"sudo docker ps \"")
-    container_id=result[0].split(" ")[0]
+    sshProcess = subprocess.Popen(['ssh',
+                               '-tt',
+                               'node1'],
+                               stdin=subprocess.PIPE, 
+                               stdout = subprocess.PIPE,
+                               universal_newlines=True,
+                               bufsize=0)
+    sshProcess.stdin.write("sudo docker ps \n")
+    sshProcess.stdin.write("logout \n")
+    sshProcess.stdin.close()
+    for line in sshProcess.stdout:
+        if "hdsearch" in line:
+            container_id=line.split(" ")[0]
+            break
+    
     i=0
+    print("IRTAAAAAAAA sto bucket server giat den leitourga")  
     while i < len(bucket_conf.port):
         extravars = [
             'CONTAINER_ID={}'.format(container_id),
             'DATASET={}'.format(bucket_conf.dataset_filepath),
-            'IP={}'.format(bucket_conf.IP),
-            'PORT={}'.format(bucket_conf.port[i]),
-            'MODE={}'.format(bucket_conf.mode),
+            'IP={}'.format(str(bucket_conf.IP[0])),
+            'PORT={}'.format(str(bucket_conf.port[i])),
+            'MODE={}'.format(bucket_conf.readmode),
             'THREADS={}'.format(bucket_conf.threads),
-            'ID={}'.format(bucket_conf.bucket_id),
+            'ID={}'.format(str(bucket_conf.bucket_id[i])),
             'NUM_BUCKETS={}'.format(bucket_conf.num_buckets),
-            'CORES={}'.format(bucket_conf.cores[i])
+            'CORES={}'.format(str(bucket_conf.cores[i]))
         ]
         run_ansible_playbook(
             inventory='hosts', 
             extravars=extravars, 
             playbook='ansible/hdsearch.yml', 
             tags='run_bucket')
-        
-        f.write(str(bucket_conf.IP) + ":" + str(bucket_conf.port[i]) + "\n")
+        f.write(str(bucket_conf.IP[0]) + ":" + str(bucket_conf.port[i]) + "\n")
         i=i+1
+        
     f.close()
-
     
     #move ip files to midtier directory
-    move_ip_file("/users/ganton12/microsuite/bucket_servers_IP.txt", container_id)
-
+    os.system('scp /users/ganton12/HDSearch/microsuite/bucket_servers_IP.txt ganton12@node1:/users/ganton12/HDSearch/microsuite/bucket_servers_IP.txt')
+    move_ip_file("/users/ganton12/HDSearch/microsuite/bucket_servers_IP.txt", container_id)
+    
     #start midtier server
     extravars = [
         'CONTAINER_ID={}'.format(container_id),
@@ -119,14 +132,15 @@ def run_remote(midtier_conf, bucket_conf):
         'PROBE_LEVEL={}'.format(midtier_conf.probe_level),
         'BUCKET_SERVERS={}'.format(midtier_conf.bucket_servers),
         'IP_FILE_PATH={}'.format(midtier_conf.ip_file_path),
-        'DATASET={}'.format(bucket_conf.dataset_filepath),
+        'DATASET={}'.format(midtier_conf.dataset_filepath),
         'MODE={}'.format(midtier_conf.readmode),
-        'IP={}'.format(bucket_conf.IP),
-        'PORT={}'.format(bucket_conf.port),
+        'IP={}'.format(midtier_conf.IP),
+        'PORT={}'.format(midtier_conf.port),
         'NETWORK_THREADS={}'.format(midtier_conf.network_threads),
         'DISPATCH_THREADS={}'.format(midtier_conf.dispatch_threads),
         'RESPONSE_THREADS={}'.format(midtier_conf.response_threads),
-        'STATS={}'.format(midtier_conf.stats)
+        'STATS={}'.format(midtier_conf.stats),
+        'CORES={}'.format(str(midtier_conf.cores))
     ]
     run_ansible_playbook(
             inventory='hosts', 
@@ -145,10 +159,105 @@ def move_ip_file(path, container_id):
             playbook='ansible/hdsearch.yml', 
             tags='copy_ip_file')    
 
+def cp_midtier(container_id):
+    extravars = [
+        'CONTAINER_ID={}'.format(container_id),
+        'MIDTIER_FILE_PATH={}'.format('/users/ganton12/HDSearch/microsuite/MicroSuite/src/HDSearch/mid_tier_service/service/mid_tier_server.cc')
+    ]
+    run_ansible_playbook(
+            inventory='hosts', 
+            extravars=extravars, 
+            playbook='ansible/hdsearch.yml', 
+            tags='copy_midtier')
+
+def compile_midtier(container_id):
+    extravars = [
+        'CONTAINER_ID={}'.format(container_id),
+        'MIDTIER_FILE_PATH={}'.format('/MicroSuite/src/HDSearch/mid_tier_service/service')
+    ]
+    run_ansible_playbook(
+            inventory='hosts', 
+            extravars=extravars, 
+            playbook='ansible/hdsearch.yml', 
+            tags='compile_midtier')    
+
+def cp_client(container_id):
+    extravars = [
+        'CONTAINER_ID={}'.format(container_id),
+        'CLIENT_FILE_PATH={}'.format('/users/ganton12/HDSearch/microsuite/MicroSuite/src/HDSearch/load_generator/load_generator_open_loop.cc')
+    ]
+    run_ansible_playbook(
+            inventory='hosts', 
+            extravars=extravars, 
+            playbook='ansible/hdsearch.yml', 
+            tags='copy_client')
+
+def compile_client(container_id):
+    extravars = [
+        'CONTAINER_ID={}'.format(container_id),
+        'CLIENT_FILE_PATH={}'.format('/MicroSuite/src/HDSearch/load_generator')
+    ]
+    run_ansible_playbook(
+            inventory='hosts', 
+            extravars=extravars, 
+            playbook='ansible/hdsearch.yml', 
+            tags='compile_client')    
+
+def fix_midtier(container_id):
+    #copy midtier file to container
+    cp_midtier(container_id)
+
+    #compile midtier file
+    compile_midtier(container_id)
+
+def fix_client(container_id):
+    #copy midtier file to container
+    cp_client(container_id)
+
+    #compile midtier file
+    compile_client(container_id)
+    
+def get_dataset():
+
+    sshProcess = subprocess.Popen(['ssh',
+                               '-tt',
+                               'node1'],
+                               stdin=subprocess.PIPE, 
+                               stdout = subprocess.PIPE,
+                               universal_newlines=True,
+                               bufsize=0)
+    sshProcess.stdin.write("sudo docker ps \n")
+    sshProcess.stdin.write("logout \n")
+    sshProcess.stdin.close()
+    for line in sshProcess.stdout:
+        if "hdsearch" in line:
+            container_id=line.split(" ")[0]
+            break
+
+    extravars = [
+        'CONTAINER_ID={}'.format(container_id),
+    ]
+    run_ansible_playbook(
+            inventory='hosts', 
+            extravars=extravars, 
+            playbook='ansible/hdsearch.yml', 
+            tags='get_dataset')    
 
 def kill_remote():
-    result = exec_command("ssh node1 \"sudo docker ps \"")
-    container_id=result[0].split(" ")[0]
+    sshProcess = subprocess.Popen(['ssh',
+                               '-tt',
+                               'node1'],
+                               stdin=subprocess.PIPE, 
+                               stdout = subprocess.PIPE,
+                               universal_newlines=True,
+                               bufsize=0)
+    sshProcess.stdin.write("sudo docker ps \n")
+    sshProcess.stdin.write("logout \n")
+    sshProcess.stdin.close()
+    for line in sshProcess.stdout:
+        if "hdsearch" in line:
+            container_id=line.split(" ")[0]
+            break
     extravars = [
         'CONTAINER_ID={}'.format(container_id)
     ]
@@ -204,47 +313,84 @@ def run_single_experiment(root_results_dir, name_prefix, client_conf, midtier_co
     results_dir_name = "{}-{}".format(name, idx)
     results_dir_path = os.path.join(root_results_dir, results_dir_name)
     hdsearch_results_dir_path = os.path.join(results_dir_path, 'hdsearch')
-    result = exec_command("ssh node1 \"sudo docker ps \"")
-    container_id=result[0].split(" ")[0]
-
+    print("irtaaaaa")
+    sshProcess = subprocess.Popen(['ssh',
+                               '-tt',
+                               'node1'],
+                               stdin=subprocess.PIPE, 
+                               stdout = subprocess.PIPE,
+                               universal_newlines=True,
+                               bufsize=0)
+    sshProcess.stdin.write("sudo docker ps \n")
+    sshProcess.stdin.write("logout \n")
+    sshProcess.stdin.close()
+    for line in sshProcess.stdout:
+        if "hdsearch" in line:
+            container_id=line.split(" ")[0]
+            break
 
     # cleanup any processes left by a previous run
     kill_profiler()
     kill_remote()
-
+    time.sleep(15)
     # prepare profiler, memcached, and mcperf agents
+    fix_midtier(container_id)
+    fix_client(container_id)
     run_remote(midtier_conf, bucket_conf)
+    
     #fix profiler source code
     run_profiler(idx)
-    time.sleep(30)
-
+    time.sleep(120)
+   
+    #print("sudo docker exec {} /MicroSuite/src/HDSearch/load_generator/load_generator_open_loop {} {} {} {} {} {}:{} dummy1 dummy2 dummy3 \n".format(container_id,client_conf.dataset_filepath,client_conf.result_filepath,client_conf.knn,client_conf.warmup_time,client_conf.warmup_qps,client_conf.IP,client_conf.port))
+    
     # do a warmup run
-    stdout = exec_command('ssh node1 "sudo docker exec {} --workdir /MicroSuite/src/HDSearch/load_generator mkdir results"'.format(container_id))
-    stdout = exec_command('ssh node1 "sudo docker exec {} --workdir /MicroSuite/src/HDSearch/load_generator ./load_generator_open_loop {} {} {} {} {} {}:{} dummy1 dummy2 dummy3"'.format(container_id,client_conf.dataset_filepath,client_conf.result_filepath,client_conf.knn,client_conf.warmup_time,client_conf.warmup_qps,client_conf.IP,client_conf.port))
+   
+    #os.system('ssh node1 "sudo docker exec {} mkdir /MicroSuite/src/HDSearch/load_generator/results \n"'.format(container_id))
+    #os.system('ssh node1 "sudo docker exec {} /MicroSuite/src/HDSearch/load_generator/load_generator_open_loop {} {} {} {} {} {}:{} dummy1 dummy2 dummy3 \n"'.format(container_id,client_conf.dataset_filepath,client_conf.result_filepath,client_conf.knn,client_conf.warmup_time,client_conf.warmup_qps,client_conf.IP,client_conf.port))
+    
+    #for line in sshProcess.stdout:
+    #    print(line)
 
     # do the measured run
+    #time.sleep(30)
+    #print("sudo docker exec {} taskset -c {} /MicroSuite/src/HDSearch/load_generator/load_generator_open_loop {} {} {} {} {} {}:{} dummy1 dummy2 dummy3".format(container_id,client_conf.cores,client_conf.dataset_filepath,client_conf.result_filepath,client_conf.knn,client_conf.run_time,client_conf.hdsearch_qps,client_conf.IP,client_conf.port))
+    
     exec_command("python3 ./profiler.py -n node1 start")
-    stdout = exec_command('ssh node1 "sudo docker exec {} --workdir /MicroSuite/src/HDSearch/load_generator taskset -c {} ./load_generator_open_loop {} {} {} {} {} {}:{} dummy1 dummy2 dummy3"'.format(client_conf.cores, container_id,client_conf.dataset_filepath,client_conf.result_filepath,client_conf.knn,client_conf.run_time,client_conf.hdsearch_qps,client_conf.IP,client_conf.port))
+    os.system('ssh node1 "sudo docker exec {} taskset -c {} /MicroSuite/src/HDSearch/load_generator/load_generator_open_loop {} {} {} {} {} {}:{} dummy1 dummy2 dummy3 &> ./results_out"'.format(container_id,client_conf.cores,client_conf.dataset_filepath,client_conf.result_filepath,client_conf.knn,client_conf.run_time,client_conf.hdsearch_qps,client_conf.IP,client_conf.port))
     exec_command("python3 ./profiler.py -n node1 stop")
     exec_command("python3 ./profiler.py -n node1 report -d {}".format(hdsearch_results_dir_path))
+    sshProcess = subprocess.Popen(['ssh',
+                               '-tt',
+                               'node1'],
+                               stdin=subprocess.PIPE, 
+                               stdout = subprocess.PIPE,
+                               universal_newlines=True,
+                               bufsize=0)
+    sshProcess.stdin.write("cat /users/ganton12/results_out \n")
+    sshProcess.stdin.write("logout \n")
+    sshProcess.stdin.close()
 
-    client_results_path_name = os.path.join(results_dir_path, 'client_results')
+
+    client_results_path_name = os.path.join(results_dir_path, 'hdsearch_client')
     with open(client_results_path_name, 'w') as fo:
-        for l in stdout:
+        for l in sshProcess.stdout:
             fo.write(l+'\n')
 
     # cleanup
     kill_remote()
     kill_profiler()
-
+    
 
 def run_multiple_experiments(root_results_dir, batch_name, system_conf, client_conf, midtier_conf, bucket_conf, iter):
     configure_hdsearch_node(system_conf)
     #start container
-    start_remote() 
+    start_remote()
+    get_dataset() 
+    
     time.sleep(500)
     name_prefix = "turbo={}-kernelconfig={}-hyperthreading={}-".format(system_conf['turbo'], system_conf['kernelconfig'],system_conf['ht'])
-    request_qps = [100]
+    request_qps = [1]
     root_results_dir = os.path.join(root_results_dir, batch_name)
     set_uncore_freq(system_conf, 2000)
     for qps in request_qps:
@@ -254,7 +400,7 @@ def run_multiple_experiments(root_results_dir, batch_name, system_conf, client_c
         #time=int(int(instance_conf.mcperf_time)*min(request_qps)/qps)
         #instance_conf.set('mcperf_time',time)
         temp_iter=iter
-        iters_cycle=math.ceil(bucket_conf.perf_counters/4.0)
+        iters_cycle=math.ceil(float(bucket_conf.perf_counters)/4.0)
         for it in range(iters_cycle*(iter),iters_cycle*(iter+1)):
             run_single_experiment(root_results_dir, name_prefix, instance_conf, midtier_conf, bucket_conf, it)
             time.sleep(120)
@@ -270,9 +416,9 @@ def main(argv):
 #         {'turbo': False, 'kernelconfig': 'disable_c6', 'ht': False},
 #         {'turbo': True, 'kernelconfig': 'disable_c6'},
 #          {'turbo': True, 'kernelconfig': 'disable_c1e_c6', 'ht': True},
-#          {'turbo': False, 'kernelconfig': 'baseline', 'ht': False},
-#          {'turbo': False, 'kernelconfig': 'disable_c6', 'ht': False},
-#          {'turbo': False, 'kernelconfig': 'disable_c1e_c6', 'ht': False},
+          {'turbo': False, 'kernelconfig': 'baseline', 'ht': False},
+          {'turbo': False, 'kernelconfig': 'disable_c6', 'ht': False},
+          {'turbo': False, 'kernelconfig': 'disable_c1e_c6', 'ht': False},
           {'turbo': False, 'kernelconfig': 'disable_cstates', 'ht': False},
 #          {'turbo': False, 'kernelconfig': 'baseline', 'ht': False},
 #          {'turbo': False, 'kernelconfig': 'disable_c1e_c6', 'ht': False, 'pstate': False},
@@ -293,9 +439,10 @@ def main(argv):
         'warmup_time': '10',
         'run_time': '120',
         'warmup_qps': '500',
-        'run_qps': '100',
+        'run_qps': '1',
         'IP': '0.0.0.0',
         'port': '50054',
+        'hdsearch_qps': '1',
         'cores': '1'
     })
 
@@ -310,10 +457,10 @@ def main(argv):
         'IP': '0.0.0.0',
         'port': '50054',
         'network_threads': '1',
-        'dispatch_threads': '4',
-        'response_threads': '4',
+        'dispatch_threads': '1',
+        'response_threads': '1',
         'stats': '0',
-        'cores': '2'
+        'cores': '2'    #'2'
     })
 
     bucket_conf = common.Configuration({
@@ -324,14 +471,15 @@ def main(argv):
         'threads': '1',
         'bucket_id': ['0', '1', '2', '3'],
         'num_buckets': '4',
-        'cores': ['3', '4', '5', '6']
+        'cores': ['3', '4', '5', '6'],
+        'perf_counters': '19'
     })
    
     logging.getLogger('').setLevel(logging.INFO)
     if len(argv) < 1:
         raise Exception("Experiment name is missing")
     batch_name = argv[0]
-    for iter in range(0, 10):
+    for iter in range(0, 1):
         for system_conf in system_confs:
             run_multiple_experiments('/users/ganton12/data', batch_name, system_conf, client_conf, midtier_conf, bucket_conf, iter)
 
