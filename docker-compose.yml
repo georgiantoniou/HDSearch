@@ -1,7 +1,7 @@
 version: "3"
 services:
-  cpuset: 1-6
     hdsearch:
+      cpuset: 1-6
       image: mklean/baseline-microsuite:hdsearch_router_setalgebra
       stdin_open: true # docker run -i
       tty: true        # docker run -t
