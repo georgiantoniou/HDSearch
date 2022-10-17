@@ -472,7 +472,7 @@ def main(argv):
         'bucket_id': ['0', '1', '2', '3'],
         'num_buckets': '4',
         'cores': ['3', '4', '5', '6'],
-        'perf_counters': '19'
+        'perf_counters': '54'
     })
    
     logging.getLogger('').setLevel(logging.INFO)
