@@ -44,7 +44,6 @@
   - name: Make Clean Midtier    
     ignore_errors: yes
     shell: sudo docker exec -w {{ MIDTIER_FILE_PATH }} {{ CONTAINER_ID }} make clean
-  tasks:
   - name: Make Midtier
     ignore_errors: yes
     shell: sudo docker exec -w {{ MIDTIER_FILE_PATH }} {{ CONTAINER_ID }} make
@@ -66,7 +65,6 @@
   - name: Make Clean Client    
     ignore_errors: yes
     shell: sudo docker exec -w {{ CLIENT_FILE_PATH }} {{ CONTAINER_ID }} make clean
-  tasks:
   - name: Make Client
     ignore_errors: yes
     shell: sudo docker exec -w {{ CLIENT_FILE_PATH }} {{ CONTAINER_ID }} make
@@ -110,4 +108,12 @@
     command: sudo docker cp ~/image_feature_vectors.dat {{ CONTAINER_ID }}:/home/image_feature_vectors.dat
     async: 10000 
     poll: 0 
-    
+- name: Copy file
+  hosts: midtier
+  tags:
+  - copy_file
+  tasks:
+  - name: Copy File
+    ignore_errors: yes
+    shell: sudo docker cp {{ SOURCE_FILE_PATH }} {{ CONTAINER_ID }}:{{ DESTINATION_FILE_PATH }}
+

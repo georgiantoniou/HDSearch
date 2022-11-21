@@ -113,10 +113,10 @@ class PerfEventProfiling(EventProfiling):
     def get_microarchitectural_events():
         events = []
         
-        events.append("instructions:u")
-        events.append("cycles:u")
-        events.append("instructions:k")
-        events.append("cycles:k")
+        #events.append("instructions:u")
+        #events.append("cycles:u")
+        #events.append("instructions:k")
+        #events.append("cycles:k")
        
         #topdown required counters
         #topdown level 1 and 2
@@ -171,17 +171,33 @@ class PerfEventProfiling(EventProfiling):
         events.append("FP_ARITH_INST_RETIRED.256B_PACKED_SINGLE")
         events.append("FP_ARITH_INST_RETIRED.512B_PACKED_DOUBLE")
         events.append("FP_ARITH_INST_RETIRED.512B_PACKED_SINGLE")
-        
+
+        #events.append("dtlb_load_misses.miss_causes_a_walk")
+        #events.append("dtlb_load_misses.stlb_hit")
+        #events.append("dtlb_load_misses.walk_active")
+        #events.append("itlb_misses.miss_causes_a_walk")
+        #events.append("itlb_misses.stlb_hit")
+        #events.append("l1d_pend_miss.pending_cycles")
+        #events.append("mem_load_retired.l2_miss")
+        #events.append("mem_load_retired.l2_hit")
+        #events.append("mem_load_retired.l3_miss")
+        #events.append("mem_load_retired.l3_hit")
+        #events.append("L1-icache-load-misses")
+        #events.append("L1-dcache-load-misses")
+        #events.append("dTLB-load-misses")
+        #events.append("iTLB-load-misses")
+
+
         return events
 
     @staticmethod
     def get_perf_stat_events():
         ev=[]
         
-        ev.append("instructions:u")
-        ev.append("cycles:u")
-        ev.append("instructions:k")
-        ev.append("cycles:k")
+        #ev.append("instructions:u")
+        #ev.append("cycles:u")
+        #ev.append("instructions:k")
+        #ev.append("cycles:k")
         ev.append("IDQ_UOPS_NOT_DELIVERED.CORE")
         ev.append("UOPS_ISSUED.ANY")
         ev.append("UOPS_RETIRED.RETIRE_SLOTS")
@@ -233,6 +249,22 @@ class PerfEventProfiling(EventProfiling):
         ev.append("FP_ARITH_INST_RETIRED.512B_PACKED_DOUBLE")
         ev.append("FP_ARITH_INST_RETIRED.512B_PACKED_SINGLE")
         
+        #ev.append("dtlb_load_misses.miss_causes_a_walk")
+        #ev.append("dtlb_load_misses.stlb_hit")
+        #ev.append("dtlb_load_misses.walk_active")
+        #ev.append("itlb_misses.miss_causes_a_walk")
+        #ev.append("itlb_misses.stlb_hit")
+        #ev.append("l1d_pend_miss.pending_cycles")
+        #ev.append("mem_load_retired.l2_miss")
+        #ev.append("mem_load_retired.l2_hit")
+        #ev.append("mem_load_retired.l3_miss")
+        #ev.append("mem_load_retired.l3_hit")
+        #ev.append("L1-icache-load-misses")
+        #ev.append("L1-dcache-load-misses")
+        #ev.append("dTLB-load-misses")
+        #ev.append("iTLB-load-misses")
+
+
         return ev
 
     def sample(self, timestamp):

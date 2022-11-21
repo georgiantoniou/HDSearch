@@ -159,6 +159,18 @@ def move_ip_file(path, container_id):
             playbook='ansible/hdsearch.yml', 
             tags='copy_ip_file')    
 
+def copy_file(container_id, source, destination):
+    extravars = [
+        'CONTAINER_ID={}'.format(container_id),
+        'SOURCE_FILE_PATH={}'.format(source),
+        'DESTINATION_FILE_PATH={}'.format(destination)
+    ]
+    run_ansible_playbook(
+            inventory='hosts',
+            extravars=extravars,
+            playbook='ansible/hdsearch.yml',
+            tags='copy_file')
+
 def cp_midtier(container_id):
     extravars = [
         'CONTAINER_ID={}'.format(container_id),
@@ -308,7 +320,7 @@ def configure_hdsearch_node(conf):
         if conf['turbo'] == False:
         	os.system('ssh -n {} "~/HDSearch/turbo-boost.sh disable"'.format(node))
 
-def run_single_experiment(root_results_dir, name_prefix, client_conf, midtier_conf, bucket_conf, idx):
+def run_single_experiment(system_conf,root_results_dir, name_prefix, client_conf, midtier_conf, bucket_conf, idx):
     name = name_prefix + client_conf.shortname()
     results_dir_name = "{}-{}".format(name, idx)
     results_dir_path = os.path.join(root_results_dir, results_dir_name)
@@ -334,8 +346,21 @@ def run_single_experiment(root_results_dir, name_prefix, client_conf, midtier_co
     kill_remote()
     time.sleep(15)
     # prepare profiler, memcached, and mcperf agents
-    fix_midtier(container_id)
-    fix_client(container_id)
+    if system_conf['kernelconfig'] == "baseline":
+        copy_file(container_id,'/users/ganton12/HDSearch/microsuite/MicroSuite/src/HDSearch/mid_tier_service/service/mid_tier_server_c6.cc','/MicroSuite/src/HDSearch/mid_tier_service/service/mid_tier_server.cc')
+        copy_file(container_id,'/users/ganton12/HDSearch/microsuite/MicroSuite/src/HDSearch/load_generator/helper_files/mid_tier_client_helper_c6.cc','/MicroSuite/src/HDSearch/load_generator/helper_files/mid_tier_client_helper.cc')
+        copy_file(container_id,'/users/ganton12/HDSearch/microsuite/MicroSuite/src/HDSearch/load_generator/helper_files/mid_tier_client_helper_c6.h','/MicroSuite/src/HDSearch/load_generator/helper_files/mid_tier_client_helper.h')
+        copy_file(container_id,'/users/ganton12/HDSearch/microsuite/MicroSuite/src/HDSearch/load_generator/load_generator_open_loop_c6.cc','/MicroSuite/src/HDSearch/load_generator/load_generator_open_loop.cc')
+        compile_midtier(container_id)
+        compile_client(container_id)
+    else:
+        copy_file(container_id,'/users/ganton12/HDSearch/microsuite/MicroSuite/src/HDSearch/mid_tier_service/service/mid_tier_server.cc','/MicroSuite/src/HDSearch/mid_tier_service/service/mid_tier_server.cc')
+        copy_file(container_id,'/users/ganton12/HDSearch/microsuite/MicroSuite/src/HDSearch/load_generator/helper_files/mid_tier_client_helper.cc','/MicroSuite/src/HDSearch/load_generator/helper_files/mid_tier_client_helper.cc')
+        copy_file(container_id,'/users/ganton12/HDSearch/microsuite/MicroSuite/src/HDSearch/load_generator/helper_files/mid_tier_client_helper.h','/MicroSuite/src/HDSearch/load_generator/helper_files/mid_tier_client_helper.h')
+        copy_file(container_id,'/users/ganton12/HDSearch/microsuite/MicroSuite/src/HDSearch/load_generator/load_generator_open_loop.cc','/MicroSuite/src/HDSearch/load_generator/load_generator_open_loop.cc')
+        compile_midtier(container_id)
+        compile_client(container_id)
+
     run_remote(midtier_conf, bucket_conf)
     
     #fix profiler source code
@@ -357,7 +382,7 @@ def run_single_experiment(root_results_dir, name_prefix, client_conf, midtier_co
     #print("sudo docker exec {} taskset -c {} /MicroSuite/src/HDSearch/load_generator/load_generator_open_loop {} {} {} {} {} {}:{} dummy1 dummy2 dummy3".format(container_id,client_conf.cores,client_conf.dataset_filepath,client_conf.result_filepath,client_conf.knn,client_conf.run_time,client_conf.hdsearch_qps,client_conf.IP,client_conf.port))
     
     exec_command("python3 ./profiler.py -n node1 start")
-    os.system('ssh node1 "sudo docker exec {} taskset -c {} /MicroSuite/src/HDSearch/load_generator/load_generator_open_loop {} {} {} {} {} {}:{} dummy1 dummy2 dummy3 &> ./results_out"'.format(container_id,client_conf.cores,client_conf.dataset_filepath,client_conf.result_filepath,client_conf.knn,client_conf.run_time,client_conf.hdsearch_qps,client_conf.IP,client_conf.port))
+    os.system('ssh node1 "sudo docker exec {} taskset -c {} /MicroSuite/src/HDSearch/load_generator/load_generator_open_loop {} {} {} {} {} {}:{} dummy1 dummy2 dummy3 {} &> ./results_out"'.format(container_id,client_conf.cores,client_conf.dataset_filepath,client_conf.result_filepath,client_conf.knn,client_conf.run_time,client_conf.hdsearch_qps,client_conf.IP,client_conf.port, client_conf.cpu))
     exec_command("python3 ./profiler.py -n node1 stop")
     exec_command("python3 ./profiler.py -n node1 report -d {}".format(hdsearch_results_dir_path))
     sshProcess = subprocess.Popen(['ssh',
@@ -386,7 +411,7 @@ def run_multiple_experiments(root_results_dir, batch_name, system_conf, client_c
     configure_hdsearch_node(system_conf)
     #start container
     start_remote()
-    get_dataset() 
+    #get_dataset() 
     
     time.sleep(500)
     name_prefix = "turbo={}-kernelconfig={}-hyperthreading={}-".format(system_conf['turbo'], system_conf['kernelconfig'],system_conf['ht'])
@@ -402,7 +427,7 @@ def run_multiple_experiments(root_results_dir, batch_name, system_conf, client_c
         temp_iter=iter
         iters_cycle=math.ceil(float(bucket_conf.perf_counters)/4.0)
         for it in range(iters_cycle*(iter),iters_cycle*(iter+1)):
-            run_single_experiment(root_results_dir, name_prefix, instance_conf, midtier_conf, bucket_conf, it)
+            run_single_experiment(system_conf,root_results_dir, name_prefix, instance_conf, midtier_conf, bucket_conf, it)
             time.sleep(120)
 
 def main(argv):
@@ -417,8 +442,8 @@ def main(argv):
 #         {'turbo': True, 'kernelconfig': 'disable_c6'},
 #          {'turbo': True, 'kernelconfig': 'disable_c1e_c6', 'ht': True},
           {'turbo': False, 'kernelconfig': 'baseline', 'ht': False},
-          {'turbo': False, 'kernelconfig': 'disable_c6', 'ht': False},
-          {'turbo': False, 'kernelconfig': 'disable_c1e_c6', 'ht': False},
+#          {'turbo': False, 'kernelconfig': 'disable_c6', 'ht': False},
+#          {'turbo': False, 'kernelconfig': 'disable_c1e_c6', 'ht': False},
           {'turbo': False, 'kernelconfig': 'disable_cstates', 'ht': False},
 #          {'turbo': False, 'kernelconfig': 'baseline', 'ht': False},
 #          {'turbo': False, 'kernelconfig': 'disable_c1e_c6', 'ht': False, 'pstate': False},
@@ -443,7 +468,8 @@ def main(argv):
         'IP': '0.0.0.0',
         'port': '50054',
         'hdsearch_qps': '1',
-        'cores': '1'
+        'cores': '1',
+        'cpu': '3'
     })
 
     midtier_conf = common.Configuration({
@@ -472,7 +498,7 @@ def main(argv):
         'bucket_id': ['0', '1', '2', '3'],
         'num_buckets': '4',
         'cores': ['3', '4', '5', '6'],
-        'perf_counters': '54'
+        'perf_counters': '50'
     })
    
     logging.getLogger('').setLevel(logging.INFO)
