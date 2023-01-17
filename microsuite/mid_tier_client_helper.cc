@@ -519,10 +519,7 @@ void PrintLatency(const GlobalStats &global_stats,
     }
     std::sort(total_response_time.begin(), total_response_time.end());
     uint64_t size = total_response_time.size();
-    float sum_of_elems;
-    for(std::vector<uint64_t>::iterator it = total_response_time.begin(); it != total_response_time.end(); ++it)
-        sum_of_elems += (*it/1000);
-    std::cout << "Average Response Time(ms): " << (float)sum_of_elems/size << " " << "99th Tail Latency(ms): " << (float)total_response_time[0.99*size]/1000.0 << " \n";
+    std::cout << "Average Response Time(ms): " << (float)std::accumulate(total_response_time.begin(), total_response_time.end(), 0)/(float)size/(float)1000 << " " << "99th Tail Latency(ms): " << (float)total_response_time[0.99*size]/1000.0 << " \n";
     PrintTime(total_response_time);
 }
 
