@@ -3,6 +3,7 @@
 #include "mid_tier_client_helper.h"
 #include <openssl/md5.h> // To cache seen images using md5 checksum
 #include <streambuf>
+#include <numeric>
 
 LoadGenCommandLineArgs* ParseLoadGenCommandLine(const int &argc,
         char** argv)
