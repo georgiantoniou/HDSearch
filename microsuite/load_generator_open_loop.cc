@@ -303,7 +303,6 @@ int main(int argc, char** argv) {
                fill the util_request field to get the util info from
                buckets and index. Otherwise, we do not request
                for util info (false).*/
-            std::cout << "Index: " << index << " \n";
             if((num_requests->AtomicallyReadCount() == 1) || ((GetTimeInSec() - interval_start_time) >= 5)){
                 util_requests->AtomicallyIncrementCount();
                 loadgen_index.LoadGen_Index(&query,
