@@ -266,6 +266,7 @@ int main(int argc, char** argv) {
     CreatePointsFromBinFile(queries_file_name, &queries);
     end_time = GetTimeInMicro();
     timing_info.create_queries_time = end_time - start_time;
+    std::cout << "create queries time: " << (end_time - start_time) << " \n";
     long queries_size = queries.GetSize();
 
     // Instantiate the client. It requires a channel, out of which the actual RPCs
