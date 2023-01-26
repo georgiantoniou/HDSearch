@@ -285,15 +285,16 @@ int main(int argc, char** argv) {
     double center = 1000000.0/(double)(qps);
     double curr_time = (double)GetTimeInMicro();
     double exit_time = curr_time + (double)(time_duration*1000000);
+    uint64_t overall_queries = qps * time_duration;
 
     //Declare the poisson distribution
     std::default_random_engine generator;
     std::poisson_distribution<int> distribution(center);
     double next_time = distribution(generator) + curr_time;
 
-    while (curr_time < exit_time) 
+    while (responses_recvd->AtomicallyReadCount() < overall_queries) 
     {
-        if (curr_time >= next_time) 
+        if (curr_time >= next_time && num_requests->AtomicallyReadCount() < overall_queries) 
         {
             num_requests->AtomicallyIncrementCount();
             /* If this is the first request, we must gather util info
@@ -334,9 +335,9 @@ int main(int argc, char** argv) {
       qps_file.close();*/
 
     float achieved_qps = (float)responses_recvd->AtomicallyReadCount()/(float)time_duration;
-    num_requests->AtomicallyIncrementCount();
-    responses_recvd->AtomicallyReadCount();
-    std::cout << "# Requests: " << num_requests->AtomicallyIncrementCount() << " \n";
+    //num_requests->AtomicallyIncrementCount();
+    //responses_recvd->AtomicallyReadCount();
+    std::cout << "# Requests: " << num_requests->AtomicallyReadCount() << " \n";
     std::cout << "# Responses: " << responses_recvd->AtomicallyReadCount() << " \n";
     std::cout << "Achieved QPS: " << achieved_qps << " \n";
 
