@@ -520,7 +520,14 @@ void PrintLatency(const GlobalStats &global_stats,
     }
     std::sort(total_response_time.begin(), total_response_time.end());
     uint64_t size = total_response_time.size();
-    std::cout << "Average Response Time(ms): " << (float)std::accumulate(total_response_time.begin(), total_response_time.end(), 0)/(float)size/(float)1000 << " " << "99th Tail Latency(ms): " << (float)total_response_time[0.99*size]/1000.0 << " \n";
+    std::cout << "Average Response Time(ms): " << (double)std::accumulate(total_response_time.begin(), total_response_time.end(), 0)/(float)size/(float)1000 << " " << "99th Tail Latency(ms): " << (float)total_response_time[0.99*size]/1000.0 << " \n";
+    std::cout << "Response Time(ms) Minimum:" << total_response_time.front() << "\n";
+    std::cout << "Response Time(ms) Maximum:" << total_response_time.back() << "\n";
+    for(unsigned int i = 0; i < timing_info_size; i++)
+    {
+        std::cout << "Response Time: " <<  global_stats.timing_info[i].total_resp_time << "\n";
+    }
+        
     PrintTime(total_response_time);
 }
 
