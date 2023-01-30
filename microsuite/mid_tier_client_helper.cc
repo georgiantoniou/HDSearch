@@ -437,11 +437,11 @@ void PrintGlobalStats(const GlobalStats &global_stats,
     unsigned int timing_info_size = global_stats.timing_info.size();
     for(unsigned int i = 0; i < timing_info_size; i++)
     {
-        total_response_time.push_back(global_stats.timing_info[i].total_resp_time);
-        create_index_req.push_back(global_stats.timing_info[i].create_index_req_time);
-        update_index_util.push_back(global_stats.timing_info[i].update_index_util_time);
-        unpack_loadgen_req.push_back(global_stats.timing_info[i].unpack_loadgen_req_time);
-        get_point_ids.push_back(global_stats.timing_info[i].get_point_ids_time);
+        total_response_time.push_back(global_stats.timing_info[i].total_resp_time);  
+        create_index_req.push_back(global_stats.timing_info[i].create_index_req_time);  
+        update_index_util.push_back(global_stats.timing_info[i].update_index_util_time);  
+        unpack_loadgen_req.push_back(global_stats.timing_info[i].unpack_loadgen_req_time); 
+        get_point_ids.push_back(global_stats.timing_info[i].get_point_ids_time);  
         get_bucket_responses.push_back(global_stats.timing_info[i].get_bucket_responses_time);
         create_bucket_req.push_back(global_stats.timing_info[i].create_bucket_req_time);
         unpack_bucket_req.push_back(global_stats.timing_info[i].unpack_bucket_req_time);
@@ -527,7 +527,7 @@ void PrintLatency(const GlobalStats &global_stats,
     {
         std::cout << "Response Time: " <<  global_stats.timing_info[i].total_resp_time << "\n";
     }
-        
+    std::cout << "Total Response Time Size: " <<  size << "\n";   
     PrintTime(total_response_time);
 }
 
