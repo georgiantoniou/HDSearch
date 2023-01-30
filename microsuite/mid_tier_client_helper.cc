@@ -403,7 +403,7 @@ void UpdateGlobalUtilStats(PercentUtilInfo* percent_util_info,
 void PrintTime(std::vector<uint64_t> time_vec)
 {
     uint64_t size = time_vec.size();
-    std::cout << (float)time_vec[0.1*size]/1000.0 << " " << (float)time_vec[0.2*size]/1000.0 << " " << (float)time_vec[0.3*size]/1000.0 << " " << (float)time_vec[0.4*size]/1000.0 << " " << (float)time_vec[0.5*size]/1000.0 << " " << (float)time_vec[0.6*size]/1000.0 << " " << (float)time_vec[0.7*size]/1000.0 << " " << (float)time_vec[0.8*size]/1000.0 << " " << (float)time_vec[0.9*size]/1000.0 << " " << (float)(float)time_vec[0.95*size]/1000.0 << " " << (float)(float)time_vec[0.99*size]/1000.0 << " " << (float)(float)time_vec[0.999*size]/1000.0 << " ";
+    std::cout << (double)time_vec[0.1*size]/1000.0 << " " << (double)time_vec[0.2*size]/1000.0 << " " << (double)time_vec[0.3*size]/1000.0 << " " << (double)time_vec[0.4*size]/1000.0 << " " << (double)time_vec[0.5*size]/1000.0 << " " << (double)time_vec[0.6*size]/1000.0 << " " << (double)time_vec[0.7*size]/1000.0 << " " << (double)time_vec[0.8*size]/1000.0 << " " << (double)time_vec[0.9*size]/1000.0 << " " << (double)(double)time_vec[0.95*size]/1000.0 << " " << (double)(double)time_vec[0.99*size]/1000.0 << " " << (double)(double)time_vec[0.999*size]/1000.0 << " ";
 }
 
 float ComputeQueryCost(const GlobalStats &global_stats,
