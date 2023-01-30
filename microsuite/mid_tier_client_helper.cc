@@ -438,48 +438,20 @@ void PrintGlobalStats(const GlobalStats &global_stats,
     for(unsigned int i = 0; i < timing_info_size; i++)
     {
         total_response_time.push_back(global_stats.timing_info[i].total_resp_time);
-        
         create_index_req.push_back(global_stats.timing_info[i].create_index_req_time);
-        std::cout << "Create Index Request Time: " <<  global_stats.timing_info[i].create_index_req_time << "\n";
-            
         update_index_util.push_back(global_stats.timing_info[i].update_index_util_time);
-        std::cout << "Update Index Utilization Time: " <<  global_stats.timing_info[i].update_index_util_time << "\n";
-            
         unpack_loadgen_req.push_back(global_stats.timing_info[i].unpack_loadgen_req_time);
-        std::cout << "Unpack loadgen Request Time: " <<  global_stats.timing_info[i].unpack_loadgen_req_time << "\n";
-            
         get_point_ids.push_back(global_stats.timing_info[i].get_point_ids_time);
-        std::cout << "Get Point IDa Time: " <<  global_stats.timing_info[i].get_point_ids_time << "\n";
-            
         get_bucket_responses.push_back(global_stats.timing_info[i].get_bucket_responses_time);
-        std::cout << "Get Bucket Responses Time: " <<  global_stats.timing_info[i].get_bucket_responses_time << "\n";
-            
         create_bucket_req.push_back(global_stats.timing_info[i].create_bucket_req_time);
-        std::cout << "Create Bucket Request Time: " <<  global_stats.timing_info[i].create_bucket_req_time << "\n";
-            
         unpack_bucket_req.push_back(global_stats.timing_info[i].unpack_bucket_req_time);
-        std::cout << "Unpack Bucket Request Time: " <<  global_stats.timing_info[i].unpack_bucket_req_time << "\n";
-            
         calculate_knn.push_back(global_stats.timing_info[i].calculate_knn_time);
-        std::cout << "Calculate KNN Time: " <<  global_stats.timing_info[i].calculate_knn_time << "\n";
-            
         pack_bucket_resp.push_back(global_stats.timing_info[i].pack_bucket_resp_time);
-        std::cout << "Pack Bucket Response Time: " <<  global_stats.timing_info[i].pack_bucket_resp_time << "\n";
-            
         unpack_bucket_resp.push_back(global_stats.timing_info[i].unpack_bucket_resp_time);
-        std::cout << "Unpack Packet Response Time: " <<  global_stats.timing_info[i].unpack_bucket_resp_time << "\n";
-            
         merge.push_back(global_stats.timing_info[i].merge_time);
-        std::cout << "Merge Time: " <<  global_stats.timing_info[i].merge_time << "\n";
-            
         pack_index_resp.push_back(global_stats.timing_info[i].pack_index_resp_time);
-        std::cout << "Pack Index Response Time: " <<  global_stats.timing_info[i].pack_index_resp_time << "\n";
-            
         unpack_index_resp.push_back(global_stats.timing_info[i].unpack_index_resp_time);
-        std::cout << "Unpack Index Response Time: " <<  global_stats.timing_info[i].unpack_index_resp_time << "\n";
-        
         index_time.push_back(global_stats.timing_info[i].index_time);
-        std::cout << "Index Time Time: " <<  global_stats.timing_info[i].index_time << "\n";
     }
     std::sort(total_response_time.begin(), total_response_time.end());
     std::sort(create_index_req.begin(), create_index_req.end());
