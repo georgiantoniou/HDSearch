@@ -452,10 +452,10 @@ void PrintGlobalStats(const GlobalStats &global_stats,
         std::cout << "Get Point IDa Time: " <<  global_stats.timing_info[i].get_point_ids_time << "\n";
             
         get_bucket_responses.push_back(global_stats.timing_info[i].get_bucket_responses_time);
-        std::cout << "Get Bucket Responses Time: " <<  global_stats.timing_info[i].get_bucket_responses << "\n";
+        std::cout << "Get Bucket Responses Time: " <<  global_stats.timing_info[i].get_bucket_responses_time << "\n";
             
         create_bucket_req.push_back(global_stats.timing_info[i].create_bucket_req_time);
-        std::cout << "Create Bucket Request Time: " <<  global_stats.timing_info[i].create_bucket_req << "\n";
+        std::cout << "Create Bucket Request Time: " <<  global_stats.timing_info[i].create_bucket_req_time << "\n";
             
         unpack_bucket_req.push_back(global_stats.timing_info[i].unpack_bucket_req_time);
         std::cout << "Unpack Bucket Request Time: " <<  global_stats.timing_info[i].unpack_bucket_req_time << "\n";
@@ -467,7 +467,7 @@ void PrintGlobalStats(const GlobalStats &global_stats,
         std::cout << "Pack Bucket Response Time: " <<  global_stats.timing_info[i].pack_bucket_resp_time << "\n";
             
         unpack_bucket_resp.push_back(global_stats.timing_info[i].unpack_bucket_resp_time);
-        std::cout << "Unpack Packet Response Time: " <<  global_stats.timing_info[i].unpack_bucket_resp << "\n";
+        std::cout << "Unpack Packet Response Time: " <<  global_stats.timing_info[i].unpack_bucket_resp_time << "\n";
             
         merge.push_back(global_stats.timing_info[i].merge_time);
         std::cout << "Merge Time: " <<  global_stats.timing_info[i].merge_time << "\n";
@@ -476,7 +476,7 @@ void PrintGlobalStats(const GlobalStats &global_stats,
         std::cout << "Pack Index Response Time: " <<  global_stats.timing_info[i].pack_index_resp_time << "\n";
             
         unpack_index_resp.push_back(global_stats.timing_info[i].unpack_index_resp_time);
-        std::cout << "Unpack Index Response Time: " <<  global_stats.timing_info[i].unpack_index_resp << "\n";
+        std::cout << "Unpack Index Response Time: " <<  global_stats.timing_info[i].unpack_index_resp_time << "\n";
         
         index_time.push_back(global_stats.timing_info[i].index_time);
         std::cout << "Index Time Time: " <<  global_stats.timing_info[i].index_time << "\n";
