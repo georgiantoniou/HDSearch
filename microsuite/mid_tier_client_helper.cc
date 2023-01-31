@@ -443,6 +443,7 @@ void PrintGlobalStats(const GlobalStats &global_stats,
         unpack_loadgen_req.push_back(global_stats.timing_info[i].unpack_loadgen_req_time); 
         get_point_ids.push_back(global_stats.timing_info[i].get_point_ids_time);  
         get_bucket_responses.push_back(global_stats.timing_info[i].get_bucket_responses_time);
+        std::cout << "Bucket Responses: " << global_stats.timing_info[i].get_bucket_responses_time << " \n";
         create_bucket_req.push_back(global_stats.timing_info[i].create_bucket_req_time);
         unpack_bucket_req.push_back(global_stats.timing_info[i].unpack_bucket_req_time);
         calculate_knn.push_back(global_stats.timing_info[i].calculate_knn_time);
@@ -520,14 +521,7 @@ void PrintLatency(const GlobalStats &global_stats,
     }
     std::sort(total_response_time.begin(), total_response_time.end());
     uint64_t size = total_response_time.size();
-    std::cout << "Average Response Time(ms): " << (double)std::accumulate(total_response_time.begin(), total_response_time.end(), 0)/(float)size/(float)1000 << " " << "99th Tail Latency(ms): " << (float)total_response_time[0.99*size]/1000.0 << " \n";
-    std::cout << "Response Time(ms) Minimum:" << total_response_time.front() << "\n";
-    std::cout << "Response Time(ms) Maximum:" << total_response_time.back() << "\n";
-    for(unsigned int i = 0; i < timing_info_size; i++)
-    {
-        std::cout << "Response Time: " <<  global_stats.timing_info[i].total_resp_time << "\n";
-    }
-    std::cout << "Total Response Time Size: " <<  size << "\n";   
+    std::cout << "Average Response Time(ms): " << (double)std::accumulate(total_response_time.begin(), total_response_time.end(), 0)/(float)size/(float)1000 << " \n"; 
     PrintTime(total_response_time);
 }
 
