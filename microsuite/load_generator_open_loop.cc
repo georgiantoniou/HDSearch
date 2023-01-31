@@ -334,11 +334,6 @@ int main(int argc, char** argv) {
 
     //Reset timing statistics
     ResetMetaStats(global_stats,number_of_bucket_servers);
-    //Validating by printing latency 
-    PrintLatency(*global_stats,
-            number_of_bucket_servers,
-            (util_requests->AtomicallyReadCount() - 1),
-            responses_recvd->AtomicallyReadCount());
     //Reset requests counters
     num_requests->AtomicallyResetCount();
     responses_recvd->AtomicallyResetCount();
