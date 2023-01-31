@@ -347,9 +347,9 @@ int main(int argc, char** argv) {
     std::cout << "# Responses: " << responses_recvd->AtomicallyReadCount() << " \n";
     std::cout << "!!!!!!!End of Warmup Period!!!!!!!" << " \n";
     
-    double curr_time = (double)GetTimeInMicro();
-    double exit_time = curr_time + (double)(time_duration*1000000);
-    uint64_t overall_queries = qps * time_duration;
+    curr_time = (double)GetTimeInMicro();
+    exit_time = curr_time + (double)(time_duration*1000000);
+    overall_queries = qps * time_duration;
     next_time = distribution(generator) + curr_time;
     index = rand() % queries_size;
     //!!!!!!!Actual Run !!!!!!!
