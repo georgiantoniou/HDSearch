@@ -284,14 +284,75 @@ int main(int argc, char** argv) {
     MultiplePoints query(1, queries.GetPointAtIndex(index));
     double center = 1000000.0/(double)(qps);
     double curr_time = (double)GetTimeInMicro();
-    double exit_time = curr_time + (double)(time_duration*1000000);
-    uint64_t overall_queries = qps * time_duration;
+    //warmup for 15 second and 1000 qps
+    double exit_time = curr_time + (double)(15*1000000);
+    uint64_t overall_queries = 1000 * 15;
 
     //Declare the poisson distribution
     std::default_random_engine generator;
     std::poisson_distribution<int> distribution(center);
     double next_time = distribution(generator) + curr_time;
+    
+    //!!!!!!!WarmUp Phase!!!!!!
+    
+    while (responses_recvd->AtomicallyReadCount() < overall_queries) 
+    {
+        if (curr_time >= next_time && num_requests->AtomicallyReadCount() < overall_queries) 
+        {
+            num_requests->AtomicallyIncrementCount();
+            /* If this is the first request, we must gather util info
+               so that we can track util periodically after every 10 seconds.*/
+            /* Before sending every request, we check to see if
+               the time (10 sec) has expired, so that we can decide to
+               fill the util_request field to get the util info from
+               buckets and index. Otherwise, we do not request
+               for util info (false).*/
+            if((num_requests->AtomicallyReadCount() == 1) || ((GetTimeInSec() - interval_start_time) >= 5)){
+                util_requests->AtomicallyIncrementCount();
+                loadgen_index.LoadGen_Index(&query,
+                        index,
+                        query.GetSize(),
+                        number_of_nearest_neighbors,
+                        true,
+                        false);
+                interval_start_time = GetTimeInSec();
+            } else {
+                loadgen_index.LoadGen_Index(&query,
+                        index,
+                        query.GetSize(),
+                        number_of_nearest_neighbors,
+                        false,
+                        false);
+            }
+            next_time = distribution(generator) + curr_time;
+            index = rand() % queries_size;
 
+            query.SetPoint(0, queries.GetPointAtIndex(index));
+        } 
+        curr_time = (double)GetTimeInMicro();
+    }
+
+    //Reset timing statistics
+    ResetMetaStats(global_stats,number_of_bucket_servers);
+    //Validating by printing latency 
+    PrintLatency(*global_stats,
+            number_of_bucket_servers,
+            (util_requests->AtomicallyReadCount() - 1),
+            responses_recvd->AtomicallyReadCount());
+    //Reset requests counters
+    num_requests->AtomicallyResetCount();
+    responses_recvd->AtomicallyResetCount();
+    //Validating by printing counters
+    std::cout << "# Requests: " << num_requests->AtomicallyReadCount() << " \n";
+    std::cout << "# Responses: " << responses_recvd->AtomicallyReadCount() << " \n";
+    std::cout << "!!!!!!!End of Warmup Period!!!!!!!" << " \n";
+    
+    double curr_time = (double)GetTimeInMicro();
+    double exit_time = curr_time + (double)(time_duration*1000000);
+    uint64_t overall_queries = qps * time_duration;
+    next_time = distribution(generator) + curr_time;
+    index = rand() % queries_size;
+    //!!!!!!!Actual Run !!!!!!!
     while (responses_recvd->AtomicallyReadCount() < overall_queries) 
     {
         if (curr_time >= next_time && num_requests->AtomicallyReadCount() < overall_queries) 
