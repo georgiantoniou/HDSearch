@@ -443,7 +443,6 @@ void PrintGlobalStats(const GlobalStats &global_stats,
         unpack_loadgen_req.push_back(global_stats.timing_info[i].unpack_loadgen_req_time); 
         get_point_ids.push_back(global_stats.timing_info[i].get_point_ids_time);  
         get_bucket_responses.push_back(global_stats.timing_info[i].get_bucket_responses_time);
-        std::cout << "Bucket Responses: " << global_stats.timing_info[i].get_bucket_responses_time << " \n";
         create_bucket_req.push_back(global_stats.timing_info[i].create_bucket_req_time);
         unpack_bucket_req.push_back(global_stats.timing_info[i].unpack_bucket_req_time);
         calculate_knn.push_back(global_stats.timing_info[i].calculate_knn_time);
