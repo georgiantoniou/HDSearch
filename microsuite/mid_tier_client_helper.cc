@@ -517,15 +517,15 @@ void PrintLatency(const GlobalStats &global_stats,
         const unsigned int util_requests,
         const unsigned int responses_recvd)
 {
-    std::vector<double> total_response_time;
+    std::vector<uint64_t> total_response_time;
     unsigned int timing_info_size = global_stats.timing_info.size();
     for(unsigned int i = 0; i < timing_info_size; i++)
     {
-        total_response_time.push_back(global_stats.timing_info[i].total_resp_time/(double)1000.0);
+        total_response_time.push_back(global_stats.timing_info[i].total_resp_time);
     }
     std::sort(total_response_time.begin(), total_response_time.end());
     uint64_t size = total_response_time.size();
-    std::cout << "Average Response Time(ms): " << (double)std::accumulate(total_response_time.begin(), total_response_time.end(), 0.0)/(double)size/(double)1000 << " \n"; 
+    std::cout << "Average Response Time(ms): " << (double)std::accumulate(total_response_time.begin(), total_response_time.end(), 0)/(double)size/(double)1000 << " \n"; 
     PrintTime(total_response_time);
 }
 
