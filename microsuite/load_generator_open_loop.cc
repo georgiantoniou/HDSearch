@@ -204,7 +204,7 @@ class LoadGenIndexClient {
                     char* cmd = new char[s.length() + 1];
                     std::strcpy(cmd, s.c_str());
                     ExecuteShellCommand(cmd);
-                    std::cout << "Call Status: " << call->status << "\n";
+                    std::cout << "Call Status: " << call->status.error_code() << "\n";
                     std::cout << "Load generator failed\n";
                     CHECK(false, "");
                 }
