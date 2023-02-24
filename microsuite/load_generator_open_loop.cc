@@ -202,8 +202,8 @@ class LoadGenIndexClient {
                     sleep(2);
                     std::string s = "./kill_index_server_empty " + ip;
                     char* cmd = new char[s.length() + 1];
-                    std::strcpy(cmd, s.c_str());
-                    ExecuteShellCommand(cmd);
+                   // std::strcpy(cmd, s.c_str());
+                    //ExecuteShellCommand(cmd);
                     std::cout << "Call Status Error Code: " << call->status.error_code() << "\n";
                     std::cout << "Call Status Error Message: " << call->status.error_message() << "\n";
                     std::cout << "Call Status Error Details: " << call->status.error_details() << "\n";
@@ -436,7 +436,7 @@ int main(int argc, char** argv) {
     //std::cout << "kill start\n";
     //std::cout << std::flush;
 
-    while (true) {
+/*    while (true) {
         //std::cout << "trying to send kill\n";
         std::cout << std::flush;
         kill_ack_lock.lock();
@@ -456,7 +456,7 @@ int main(int argc, char** argv) {
         //std::cout << "sent kill\n";
         //std::cout << std::flush;
     }
-
+*/
 
 #if 0
     std::string s = "/home/liush/highdimensionalsearch/load_generator/kill_index_server_empty " + ip;
