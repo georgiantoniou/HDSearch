@@ -291,8 +291,8 @@ int main(int argc, char** argv) {
     double center = 1000000.0/(double)(1000);
     double curr_time = (double)GetTimeInMicro();
     //warmup for 15 second and 1000 qps
-    double exit_time = curr_time + (double)(30*1000000);
-    uint64_t overall_queries = 1000 * 30;
+    double exit_time = curr_time + (double)(15*1000000);
+    uint64_t overall_queries = 1000 * 15;
 
     //Declare the poisson distribution
     std::default_random_engine generator;
